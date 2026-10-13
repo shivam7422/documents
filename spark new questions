@@ -1,0 +1,8 @@
+how to define, broadcast, smj, and shj
+
+broadcast- > df.join(broadcast(df2), seq("column_name"),"inner"))
+smj -> for both dataframes, it will sort the data based on join key and then merge both the sorted records
+--> df.hint("merge").join(df2.hint("merge"), seq("column_name"),"inner"))
+shj -> for both dataframes, it will create a hash table of each partition, then look up matches from the other side.
+--> df.hint("shuffle_hash").join(df2.hint("shuffle_hash"), seq("column_name"),"inner"))
+
