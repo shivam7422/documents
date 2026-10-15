@@ -1,0 +1,74 @@
+import org.apache.spark.sql.DataFrame
+
+def compareSchema(sourceDF: DataFrame, targetDF: DataFrame): Unit = {
+
+  val sourceFields = sourceDF.schema.fields
+  val targetFields = targetDF.schema.fields
+
+  val sourceMap = sourceFields.map(f => f.name -> f.dataType).toMap
+  val targetMap = targetFields.map(f => f.name -> f.dataType).toMap
+
+  // Columns present in source but missing in target
+  val missingColumns = sourceMap.keySet.diff(targetMap.keySet)
+
+  // Columns present in target but missing in source
+  val extraColumns = targetMap.keySet.diff(sourceMap.keySet)
+
+  // Common columns having different data types
+  val typeMismatch = sourceMap.keySet
+    .intersect(targetMap.keySet)
+    .filter(col => sourceMap(col) != targetMap(col))
+
+  println("Missing columns in target: " + missingColumns.mkString(", "))
+  println("Extra columns in target: " + extraColumns.mkString(", "))
+
+  println("Data type mismatches:")
+  typeMismatch.foreach { col =>
+    println(
+      s"$col: source=${sourceMap(col)}, target=${targetMap(col)}"
+    )
+  }
+
+  if (missingColumns.isEmpty &&
+      extraColumns.isEmpty &&
+      typeMismatch.isEmpty) {
+    println("Schema validation successful")
+  } else {
+    println("Schema validation failed")
+  }
+}
+
+val sourceDF = Seq(
+  (101, "Amit", 5000.0)
+).toDF("id", "name", "salary")
+
+val targetDF = Seq(
+  (101, "Amit", "5000")
+).toDF("id", "name", "amount")
+
+compareSchema(sourceDF, targetDF)
+
+/*Missing columns in target: salary
+Extra columns in target: amount
+Data type mismatches:
+Schema validation failed*/
+
+
+val sourceDF1 = Seq(
+  ("101", "Amit", 5000.0)
+).toDF("id", "name", "salary")
+
+val targetDF1 = Seq(
+  (101, "Amit", "5000")
+).toDF("id", "name", "amount")
+
+compareSchema(sourceDF1, targetDF1)
+
+/*
+Missing columns in target: salary
+Extra columns in target: amount
+Data type mismatches:
+id: source=StringType, target=IntegerType
+Schema validation failed
+*/
+
