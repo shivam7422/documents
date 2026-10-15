@@ -72,3 +72,57 @@ id: source=StringType, target=IntegerType
 Schema validation failed
 */
 
+
+import spark.implicits._
+
+// Source DataFrame
+val sourceDF = Seq(
+  (1, "Amit", 5000.0),
+  (2, "Priya", 6000.0)
+).toDF("id", "name", "salary")
+
+// Target DataFrame
+val targetDF = Seq(
+  (1, "Amit", "5000"),
+  (2, "Priya", "6000")
+).toDF("id", "name", "amount")
+
+// Get column names and data types
+val source = sourceDF.schema.fields
+  .map(f => f.name -> f.dataType).toMap
+
+val target = targetDF.schema.fields
+  .map(f => f.name -> f.dataType).toMap
+
+var isValid = true
+
+// Check source against target
+source.foreach { case (name, dtype) =>
+
+  if (!target.contains(name)) {
+    println(name + " is missing in target")
+    isValid = false
+  }
+  else if (target(name) != dtype) {
+    println(name + " datatype mismatch: source=" +
+      dtype + ", target=" + target(name))
+    isValid = false
+  }
+}
+
+// Check target against source
+target.foreach { case (name, dtype) =>
+
+  if (!source.contains(name)) {
+    println(name + " is missing in source")
+    isValid = false
+  }
+}
+
+// Final validation result
+if (isValid)
+  println("Schema validation successful")
+else
+  println("Schema validation failed")
+
+
