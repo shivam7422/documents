@@ -1,0 +1,16 @@
+===============================to find second highest salary--------------------------
+
+select a.department, max(a.salary) as second_highest from axis a(
+select department, max(salary) as highest from axis group by department
+)b
+on a.department = b.department and a.salary <b.highest group by a.department;
+
+===============================to find third highest salary--------------------------
+
+select d.department, max(d.salary) as third_highest_salary
+from axis d inner join on 
+(select a.department, max(a.salary) as second_highest from axis a(
+select department, max(salary) as highest from axis group by department
+)b
+on a.department = b.department and a.salary <b.highest group by a.department)c
+d.department= c.department and d.salary<c.second_highest group by d.department;
